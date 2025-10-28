@@ -6,14 +6,13 @@
 <title>LORD VOYAGE — Interactive Bio</title>
 <link rel="preload" href="voyager.mp3" as="audio">
 <style>
-  /* -------------------------
-     Design tokens & reset
-     ------------------------- */
   :root{
-    --bg:#000;
-    --card-bg: rgba(255,255,255,0.02);
+    --bg-1: #040506;
+    --bg-2: #000;
     --accent: #00f0ff;
-    --muted: rgba(220,255,255,0.7);
+    --accent-2: #7de2ff;
+    --card: rgba(255,255,255,0.02);
+    --muted: rgba(210,255,255,0.78);
     --glass-border: rgba(0,240,255,0.04);
     --radius:14px;
     --maxw:1100px;
@@ -22,8 +21,9 @@
   html,body{height:100%}
   body{
     margin:0;
-    font-family: Inter, "Poppins", system-ui, -apple-system, Roboto, "Segoe UI", Arial;
-    background: linear-gradient(180deg,#030405,#000);
+    font-family:Inter, "Poppins", system-ui, -apple-system, Roboto, "Segoe UI", Arial;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(30,10,60,0.08), transparent 12%),
+                linear-gradient(180deg,var(--bg-1),var(--bg-2));
     color:#eaffff;
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
@@ -31,50 +31,39 @@
     scroll-behavior:smooth;
   }
 
-  /* -------------------------
-     Background canvases
-     ------------------------- */
+  /* Fullscreen canvases */
   canvas#bgParticles, canvas#constellation {
     position: fixed;
     inset: 0;
+    width:100%;
+    height:100%;
     z-index: 0;
-    pointer-events: none;
+    pointer-events: none; /* we'll manually add listeners on document for touch */
     mix-blend-mode: screen;
   }
 
-  /* -------------------------
-     Page layout & header
-     ------------------------- */
+  /* Header */
   header{
     position: sticky;
     top: 0;
-    z-index: 10;
-    backdrop-filter: blur(6px);
-    background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
-    border-bottom: 1px solid rgba(255,255,255,0.02);
+    z-index: 8;
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:10px;
     padding:10px 18px;
+    backdrop-filter: blur(6px);
+    background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+    border-bottom: 1px solid rgba(255,255,255,0.02);
   }
-  .brand{
-    display:flex;gap:12px;align-items:center;
-  }
-  .logo{
-    width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#4fb8ff);
-    box-shadow:0 6px 24px rgba(0,240,255,0.06), inset 0 -6px 18px rgba(255,255,255,0.04);
-    display:grid;place-items:center;font-weight:700;color:#021;
-  }
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#4fb8ff);display:grid;place-items:center;font-weight:800;color:#021}
   nav{display:flex;gap:12px;align-items:center}
-  nav a{
-    color:var(--muted); text-decoration:none; padding:8px 10px; border-radius:8px; font-weight:700;
-  }
-  nav a:hover{ color:var(--accent); background: rgba(0,255,255,0.02) }
+  nav a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px;font-weight:700}
+  nav a:hover{color:var(--accent);background: rgba(0,255,255,0.02)}
 
-  /* -------------------------
-     Main container & sections
-     ------------------------- */
-  main{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:28px 18px 120px}
+  /* Main layout */
+  main{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:28px 18px 140px}
   .wrap{width:100%;max-width:var(--maxw)}
   section.card{
     background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));
@@ -86,30 +75,22 @@
     position:relative;
     overflow:hidden;
   }
-  h1{margin:0;text-align:center;font-size:clamp(20px,4vw,36px);letter-spacing:2px;color:#dff}
-  .profile{
-    display:flex;gap:20px;align-items:center;padding:16px 0;flex-wrap:wrap;
-  }
-  .avatar{
-    width:120px;height:120px;border-radius:999px;background-image:url('https://i.ibb.co/NrX7yJc/silhouette.png');
-    background-size:cover;background-position:center;box-shadow:0 10px 40px rgba(0,240,255,0.05);
-  }
+  h1{margin:6px 0 12px 0;text-align:center;font-size:clamp(20px,4vw,34px);letter-spacing:2px;color:#dff}
+  .profile{display:flex;gap:20px;align-items:center;padding:16px 0;flex-wrap:wrap}
+  .avatar{width:120px;height:120px;border-radius:999px;background-image:url('https://i.ibb.co/NrX7yJc/silhouette.png');background-size:cover;background-position:center;box-shadow:0 10px 40px rgba(0,240,255,0.05)}
   .meta p{margin:6px 0;font-weight:700;color:var(--muted)}
-  .section-title{font-weight:800; color:var(--muted); margin-top:6px; margin-bottom:8px}
+  .section-title{font-weight:800;color:var(--muted);margin-top:6px;margin-bottom:8px}
 
-  /* grid buttons */
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
   .btn{
     background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));
     border:1px solid rgba(0,0,0,0.45);
     padding:16px 14px;border-radius:12px;text-align:center;font-weight:800;letter-spacing:1px;
-    text-transform:uppercase;color:#dff;cursor:default; transition: transform .22s, box-shadow .22s;
+    text-transform:uppercase;color:#dff;cursor:default;transition: transform .22s, box-shadow .22s;
   }
   .btn:hover{transform:translateY(-6px); color:var(--accent); box-shadow:0 16px 40px rgba(0,240,255,0.06)}
 
-  /* -------------------------
-     Music UI (fixed at bottom)
-     ------------------------- */
+  /* Music bar fixed */
   .music-bar{
     position: fixed;
     left: 50%;
@@ -117,10 +98,8 @@
     bottom: 14px;
     width: calc(100% - 36px);
     max-width:980px;
-    z-index:12;
-    display:flex;
-    align-items:center;
-    gap:12px;
+    z-index:9;
+    display:flex;align-items:center;gap:12px;
     background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.25));
     padding:10px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.02);
     box-shadow:0 10px 40px rgba(0,0,0,0.6);
@@ -133,29 +112,36 @@
   .controls{display:flex;gap:10px;align-items:center;margin-left:auto}
   .iconbtn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-weight:700}
   .iconbtn:hover{color:var(--accent)}
-
   .progress-wrap{position:relative;flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden}
-  .progress{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--accent),#6ef);transition:width .08s linear}
-  .vol{width:110px}
+  .progress{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--accent), var(--accent-2));transition:width .08s linear}
   input[type="range"]{width:100%}
 
-  /* small helpers */
+  /* floating music orb (reactive) */
+  .music-orb{
+    position:fixed;right:18px;bottom:98px;width:68px;height:68px;border-radius:50%;z-index:9;
+    display:grid;place-items:center;background:radial-gradient(circle at 30% 30%, rgba(0,240,255,0.16), rgba(0,0,0,0.12));
+    border:1px solid rgba(0,240,255,0.06);box-shadow:0 12px 40px rgba(0,240,255,0.05);
+    cursor:pointer;
+  }
+  .orb-core{width:36px;height:36px;border-radius:50%;background:linear-gradient(180deg,var(--accent),var(--accent-2));box-shadow:0 8px 24px rgba(0,240,255,0.12)}
+
   .tiny{font-size:12px;color:var(--muted)}
   footer{margin-top:10px;color:var(--muted);text-align:center;font-size:13px}
 
   @media(max-width:640px){
+    nav{display:none}
+    .music-orb{right:12px;bottom:86px}
     .music-bar{width:calc(100% - 22px);padding:8px}
-    nav{display:none} /* hide nav to save header space on phone (scroll instead) */
   }
 </style>
 </head>
 <body>
-  <!-- Background canvases -->
+  <!-- canvases -->
   <canvas id="bgParticles" aria-hidden="true"></canvas>
   <canvas id="constellation" aria-hidden="false"></canvas>
 
-  <!-- Header -->
-  <header role="banner">
+  <!-- header -->
+  <header>
     <div class="brand">
       <div class="logo">LV</div>
       <div>
@@ -163,7 +149,6 @@
         <div class="tiny">Interactive Bio</div>
       </div>
     </div>
-
     <nav aria-label="Primary navigation">
       <a href="#bio">Bio</a>
       <a href="#skills">Skills</a>
@@ -172,11 +157,10 @@
     </nav>
   </header>
 
-  <!-- Main content -->
+  <!-- main -->
   <main>
     <div class="wrap">
-      <!-- BIO -->
-      <section id="bio" class="card" role="region" aria-labelledby="bioTitle">
+      <section id="bio" class="card" aria-labelledby="bioTitle">
         <h1 id="bioTitle">LORD VOYAGE BIO</h1>
         <div class="profile">
           <div class="avatar" aria-hidden="true"></div>
@@ -186,25 +170,20 @@
             <p><strong>BEST FRIEND:</strong> Kevin Tech</p>
           </div>
         </div>
-        <p class="tiny" style="margin-top:10px;color:var(--muted)">
-          Tap the screen to paint constellations — stars will glow, link, and chime softly.
-        </p>
+        <p class="tiny">Tip: tap or drag on the page to paint constellations. Stars will glow, link, and chime.</p>
       </section>
 
-      <!-- SKILLS -->
-      <section id="skills" class="card" role="region" aria-labelledby="skillsTitle">
+      <section id="skills" class="card" aria-labelledby="skillsTitle">
         <div class="section-title" id="skillsTitle">Skills &amp; Expert</div>
         <div class="grid" id="skillGrid"></div>
       </section>
 
-      <!-- CHANNELS -->
-      <section id="channels" class="card" role="region" aria-labelledby="channelsTitle">
+      <section id="channels" class="card" aria-labelledby="channelsTitle">
         <div class="section-title" id="channelsTitle">Admins on Channels</div>
         <div class="grid" id="channelGrid"></div>
       </section>
 
-      <!-- CONTACT -->
-      <section id="contact" class="card" role="region" aria-labelledby="contactTitle">
+      <section id="contact" class="card" aria-labelledby="contactTitle">
         <div class="section-title" id="contactTitle">Contact</div>
         <p class="tiny">Telegram: <a href="https://t.me/LordVoyagee/" target="_blank" rel="noopener noreferrer">t.me/LordVoyagee</a></p>
         <p class="tiny">Telegram channel: <a href="https://t.me/terminalsupport" target="_blank" rel="noopener noreferrer">terminalsupport</a></p>
@@ -215,7 +194,12 @@
     </div>
   </main>
 
-  <!-- Music controls (fixed) -->
+  <!-- music orb -->
+  <div class="music-orb" id="musicOrb" title="Play / Pause (tap)" role="button" aria-pressed="false">
+    <div class="orb-core" id="orbCore" aria-hidden="true"></div>
+  </div>
+
+  <!-- music bar -->
   <div class="music-bar" role="region" aria-label="Music controls">
     <div class="music-left">
       <button class="playbtn" id="playBtn" aria-pressed="false" aria-label="Play or pause">
@@ -224,34 +208,29 @@
       </button>
       <div class="track-info">
         <div class="title" id="trackTitle">voyager.mp3</div>
-        <div class="tiny" id="trackSub">Ambient — loop</div>
+        <div class="tiny" id="trackSub">Ambient • loop</div>
       </div>
     </div>
 
-    <div class="progress-wrap" aria-hidden="false" title="Seek">
+    <div class="progress-wrap" title="Seek" aria-hidden="false">
       <div class="progress" id="progressBar"></div>
     </div>
 
     <div class="controls">
       <div class="tiny" id="timeLabel">00:00 / 00:00</div>
       <button class="iconbtn" id="muteBtn" aria-pressed="false" title="Mute">🔊</button>
-      <div class="vol" style="width:110px">
-        <input id="vol" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume">
-      </div>
-      <button class="iconbtn" id="loopBtn" aria-pressed="true" title="Loop toggle">🔁</button>
+      <div style="width:110px"><input id="vol" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume"></div>
+      <button class="iconbtn" id="loopBtn" aria-pressed="true" title="Loop">🔁</button>
     </div>
   </div>
 
 <script>
-/* =========================================
-   Simple data population
-   ========================================= */
+/* -------------------------
+   Populate data
+   ------------------------- */
 const skills = ["Ethical Hacking","Web Making","Termux Expert","Termux Tools Making","Programming Expert","Web Info Scraping","Panel Seller","Etc"];
 const skillGrid = document.getElementById('skillGrid');
-skills.forEach(s => {
-  const d = document.createElement('div'); d.className='btn'; d.textContent = s;
-  skillGrid.appendChild(d);
-});
+skills.forEach(s => { const el = document.createElement('div'); el.className='btn'; el.textContent=s; skillGrid.appendChild(el); });
 
 const channels = [
   {title:"The Mastermind", url:"https://t.me/LordVoyagee/"},
@@ -259,28 +238,23 @@ const channels = [
   {title:"WhatsApp Channel", url:"https://whatsapp.com/channel/0029Vb6ZjMMGE56kBkEww63a"}
 ];
 const channelGrid = document.getElementById('channelGrid');
-channels.forEach(c => {
-  const a = document.createElement('a'); a.className='btn'; a.textContent = c.title; a.href = c.url;
-  a.target='_blank'; a.rel='noopener noreferrer';
-  channelGrid.appendChild(a);
-});
+channels.forEach(c => { const a = document.createElement('a'); a.className='btn'; a.textContent=c.title; a.href=c.url; a.target='_blank'; a.rel='noopener noreferrer'; channelGrid.appendChild(a); });
 
-/* =========================================
-   Background particles (soft floating dots)
-   ========================================= */
+/* -------------------------
+   Background particles
+   ------------------------- */
 (function bgParticles(){
   const canvas = document.getElementById('bgParticles');
-  if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  let W = innerWidth, H = innerHeight;
-  canvas.width = W; canvas.height = H;
-  const dots = [];
-  for(let i=0;i<42;i++){
-    dots.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+0.6,vx:(Math.random()-0.5)*0.2,vy:(Math.random()-0.5)*0.2,a:0.03+Math.random()*0.06});
+  let W=innerWidth, H=innerHeight;
+  canvas.width=W; canvas.height=H;
+  const parts=[];
+  for(let i=0;i<46;i++){
+    parts.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+0.6, vx:(Math.random()-0.5)*0.24, vy:(Math.random()-0.5)*0.24, a:0.02 + Math.random()*0.06});
   }
   function loop(){
     ctx.clearRect(0,0,W,H);
-    for(const p of dots){
+    for(const p of parts){
       p.x += p.vx; p.y += p.vy;
       if(p.x < 0) p.x = W; if(p.x > W) p.x = 0; if(p.y < 0) p.y = H; if(p.y > H) p.y = 0;
       ctx.beginPath(); ctx.fillStyle = `rgba(0,240,255,${p.a})`; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
@@ -288,25 +262,25 @@ channels.forEach(c => {
     requestAnimationFrame(loop);
   }
   loop();
-  window.addEventListener('resize', ()=>{W=innerWidth;H=innerHeight;canvas.width=W;canvas.height=H});
+  window.addEventListener('resize', ()=>{ W=innerWidth; H=innerHeight; canvas.width=W; canvas.height=H; });
 })();
 
-/* =========================================
-   Constellation: touch/click -> star with links + chime
-   ========================================= */
+/* -------------------------
+   Constellation effect
+   - stars spawn on pointer (touch/mouse) and during drag
+   - link lines drawn when distance < threshold
+   ------------------------- */
 (function constellation(){
   const canvas = document.getElementById('constellation');
   const ctx = canvas.getContext('2d');
   let W = innerWidth, H = innerHeight;
   canvas.width = W; canvas.height = H;
-  canvas.style.zIndex = 1; // above bg, behind content
-  canvas.style.pointerEvents = 'auto';
-
-  const MAX = 55;          // cap number of stars
-  const LINK_DIST = 140;   // px for link lines
+  canvas.style.zIndex = 0; // behind main content (main has z-index 2)
+  const MAX = 80;
+  const LINK_DIST = 140;
   const stars = [];
 
-  // lightweight WebAudio chime
+  // WebAudio chime helper (lightweight sine)
   let audioCtx = null;
   function playChime(x){
     try{
@@ -315,14 +289,14 @@ channels.forEach(c => {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
-      const freq = 420 + (x / Math.max(W,1)) * 600;
+      const freq = 420 + (x / Math.max(W,1)) * 560;
       osc.frequency.setValueAtTime(freq, now);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.07, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
       osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now + 0.8);
-    }catch(e){/* ignore if blocked */}
+      osc.start(now); osc.stop(now + 0.75);
+    }catch(e){ /* ignore if blocked */ }
   }
 
   function addStar(x,y){
@@ -330,31 +304,52 @@ channels.forEach(c => {
     y = Math.max(6, Math.min(H-6, y));
     if(stars.length >= MAX) stars.shift();
     stars.push({
-      x,y,
-      r: 1.2 + Math.random()*1.8,
+      x, y,
+      r: 1 + Math.random()*2,
       life: 1,
-      decay: 0.004 + Math.random()*0.009,
+      decay: 0.004 + Math.random()*0.01,
       tw: Math.random()*0.03 + 0.01,
-      dir: Math.random()>0.5?1:-1
+      dir: Math.random() > 0.5 ? 1 : -1
     });
     playChime(x);
   }
 
-  function pointerHandler(e){
-    let x,y;
-    if(e.type.startsWith('touch')){
-      const t = e.changedTouches[0]; x=t.clientX; y=t.clientY;
-    }else{ x=e.clientX; y=e.clientY; }
-    addStar(x,y);
-    // prevent default on touch to avoid accidental scroll if wanted
-    if(e.cancelable) e.preventDefault();
+  // unify pointer events: handle pointerdown + pointermove for dragging
+  let isPointerDown = false;
+  function onPointerDown(e){
+    isPointerDown = true;
+    const p = getPointer(e);
+    addStar(p.x, p.y);
+    e.preventDefault && e.preventDefault();
   }
-  canvas.addEventListener('click', pointerHandler, {passive:false});
-  canvas.addEventListener('touchstart', pointerHandler, {passive:false});
+  function onPointerMove(e){
+    if(!isPointerDown) return;
+    const p = getPointer(e);
+    // spawn a star every few pixels to avoid too dense
+    addStar(p.x, p.y);
+    e.preventDefault && e.preventDefault();
+  }
+  function onPointerUp(e){ isPointerDown = false; }
+
+  function getPointer(e){
+    if(e.touches && e.touches.length) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if(e.changedTouches && e.changedTouches.length) {
+      return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    } else return { x: e.clientX, y: e.clientY };
+  }
+
+  // attach listeners on document so UI elements still work (canvas pointer-events are none)
+  document.addEventListener('pointerdown', onPointerDown, {passive:false});
+  document.addEventListener('pointermove', onPointerMove, {passive:false});
+  document.addEventListener('pointerup', onPointerUp, {passive:false});
+  document.addEventListener('touchstart', onPointerDown, {passive:false});
+  document.addEventListener('touchmove', onPointerMove, {passive:false});
+  document.addEventListener('touchend', onPointerUp, {passive:false});
 
   function draw(){
     ctx.clearRect(0,0,W,H);
-    // lines
+    // draw lines
     for(let i=0;i<stars.length;i++){
       const a = stars[i];
       for(let j=i+1;j<stars.length;j++){
@@ -362,12 +357,12 @@ channels.forEach(c => {
         const dx = a.x - b.x, dy = a.y - b.y;
         const d = Math.sqrt(dx*dx + dy*dy);
         if(d < LINK_DIST){
-          const alpha = (1 - d / LINK_DIST) * 0.28 * Math.min(a.life,b.life);
+          const alpha = (1 - d / LINK_DIST) * 0.28 * Math.min(a.life, b.life);
           ctx.beginPath(); ctx.strokeStyle = `rgba(0,240,255,${alpha})`; ctx.lineWidth = 1; ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
         }
       }
     }
-    // stars
+    // draw stars
     for(let i=stars.length-1;i>=0;i--){
       const s = stars[i];
       s.r += Math.sin(Date.now()*s.tw*0.01)*s.dir*0.02;
@@ -384,105 +379,154 @@ channels.forEach(c => {
       // core
       ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${0.9*alpha})`; ctx.arc(s.x,s.y,Math.max(0.8,s.r*0.45),0,Math.PI*2); ctx.fill();
       // tint
-      ctx.beginPath(); ctx.fillStyle = `rgba(0,200,255,${0.5*alpha})`; ctx.arc(s.x+0.2, s.y-0.2, s.r*0.9,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.fillStyle = `rgba(0,200,255,${0.5*alpha})`; ctx.arc(s.x+0.2,s.y-0.2,s.r*0.9,0,Math.PI*2); ctx.fill();
       if(s.life <= 0.01) stars.splice(i,1);
     }
     requestAnimationFrame(draw);
   }
   draw();
 
-  // responsive
+  // respond to resize
   window.addEventListener('resize', ()=>{
     W = innerWidth; H = innerHeight; canvas.width=W; canvas.height=H;
   });
 })();
 
-/* =========================================
-   Music controls (voyager.mp3 in same folder)
-   ========================================= */
-const audio = new Audio('voyager.mp3');
-audio.loop = true; audio.preload = 'auto';
-const playBtn = document.getElementById('playBtn');
-const svgPlay = document.getElementById('svgPlay');
-const svgPause = document.getElementById('svgPause');
-const progressBar = document.getElementById('progressBar');
-const timeLabel = document.getElementById('timeLabel');
-const vol = document.getElementById('vol');
-const muteBtn = document.getElementById('muteBtn');
-const loopBtn = document.getElementById('loopBtn');
+/* -------------------------
+   Music: voyager.mp3 with visual orb reacting
+   ------------------------- */
+(function musicControls(){
+  // create audio and analyser
+  const audio = new Audio('voyager.mp3');
+  audio.loop = true;
+  audio.preload = 'auto';
+  let audioCtx = null, analyser = null, source = null, dataArray = null;
 
-// helpers
-function fmt(t){ if(!isFinite(t)) return '00:00'; const m=Math.floor(t/60).toString().padStart(2,'0'); const s=Math.floor(t%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+  // DOM refs
+  const playBtn = document.getElementById('playBtn');
+  const svgPlay = document.getElementById('svgPlay');
+  const svgPause = document.getElementById('svgPause');
+  const progressBar = document.getElementById('progressBar');
+  const timeLabel = document.getElementById('timeLabel');
+  const vol = document.getElementById('vol');
+  const muteBtn = document.getElementById('muteBtn');
+  const loopBtn = document.getElementById('loopBtn');
+  const orb = document.getElementById('musicOrb');
+  const orbCore = document.getElementById('orbCore');
 
-playBtn.addEventListener('click', async ()=>{
-  try{
-    if(audio.paused){
-      await audio.play();
-      svgPlay.style.display='none'; svgPause.style.display='block';
-      playBtn.setAttribute('aria-pressed','true');
-    }else{
-      audio.pause();
-      svgPlay.style.display='block'; svgPause.style.display='none';
-      playBtn.setAttribute('aria-pressed','false');
+  // format time
+  function fmt(t){ if(!isFinite(t)) return '00:00'; const m=Math.floor(t/60).toString().padStart(2,'0'); const s=Math.floor(t%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+
+  function setupAudioNodes(){
+    try{
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        source = audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        // start the visual loop
+        requestAnimationFrame(orbVisual);
+      }
+    }catch(e){
+      console.warn('WebAudio not available', e);
     }
-  }catch(e){
-    console.warn('play failed',e);
   }
-});
 
-audio.addEventListener('timeupdate', ()=>{
-  const pct = (audio.currentTime / Math.max(audio.duration,1)) * 100;
-  progressBar.style.width = pct + '%';
-  timeLabel.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
-});
-audio.addEventListener('loadedmetadata', ()=> timeLabel.textContent = `${fmt(0)} / ${fmt(audio.duration)}`);
-audio.addEventListener('ended', ()=>{
-  svgPlay.style.display='block'; svgPause.style.display='none'; playBtn.setAttribute('aria-pressed','false');
-});
-
-// Seek by clicking progress
-document.querySelector('.progress-wrap').addEventListener('click',(e)=>{
-  const rect = e.currentTarget.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const pct = x / rect.width;
-  audio.currentTime = pct * audio.duration || 0;
-});
-
-// Volume & mute
-vol.addEventListener('input',()=>{ audio.volume = parseFloat(vol.value); muteBtn.textContent = audio.volume > 0 ? '🔊' : '🔈'; });
-vol.value = 0.7; audio.volume = 0.7;
-muteBtn.addEventListener('click', ()=>{
-  if(audio.muted){ audio.muted=false; muteBtn.textContent='🔊'; } else { audio.muted=true; muteBtn.textContent='🔈'; }
-});
-
-// Loop toggle
-loopBtn.addEventListener('click', ()=>{
-  audio.loop = !audio.loop;
-  loopBtn.setAttribute('aria-pressed', audio.loop);
-  loopBtn.style.color = audio.loop ? 'var(--accent)' : '';
-});
-
-// Helpful: start audio after first user gesture if you want autoplay vibe
-// (some mobile browsers block autoplay; the play button ensures gesture)
-document.addEventListener('click', function initOnce(){
-  // run once to attempt to resume AudioContext policy in some browsers
-  if(typeof audio.play === 'function') {
-    // don't auto-play, but unlock audio when user interacts
-    audio.play().then(()=>{ audio.pause(); }).catch(()=>{});
+  // orb visual: pulse with low-frequency energy
+  function orbVisual(){
+    if(analyser){
+      analyser.getByteFrequencyData(dataArray);
+      // average lower half (bass)
+      let sum=0; for(let i=0;i<dataArray.length/3;i++) sum+=dataArray[i];
+      const avg = sum/(dataArray.length/3 || 1);
+      // map avg (0-255) to scale
+      const scale = 1 + (avg/255)*0.9;
+      orbCore.style.transform = `scale(${0.9*scale})`;
+      orbCore.style.filter = `drop-shadow(0 8px ${8*scale}px rgba(0,240,255,0.18))`;
+    } else {
+      // idle subtle pulse
+      const t = (Date.now()%2000)/2000;
+      const s = 0.98 + Math.sin(t*Math.PI*2)*0.04;
+      orbCore.style.transform = `scale(${s})`;
+    }
+    requestAnimationFrame(orbVisual);
   }
-  document.removeEventListener('click', initOnce);
-});
 
-/* =========================================
-   Small accessibility / nav hint
-   ========================================= */
+  // UI events
+  playBtn.addEventListener('click', async ()=>{
+    try{
+      if(audio.paused){
+        // ensure audio context unlocked
+        setupAudioNodes();
+        await audio.play();
+        svgPlay.style.display='none'; svgPause.style.display='block';
+        playBtn.setAttribute('aria-pressed','true');
+        orb.setAttribute('aria-pressed','true');
+      } else {
+        audio.pause();
+        svgPlay.style.display='block'; svgPause.style.display='none';
+        playBtn.setAttribute('aria-pressed','false');
+        orb.setAttribute('aria-pressed','false');
+      }
+    }catch(e){ console.warn('Playback blocked or failed', e); }
+  });
+
+  // orb click toggles play
+  orb.addEventListener('click', ()=> playBtn.click());
+
+  // progress update
+  audio.addEventListener('timeupdate', ()=>{
+    const pct = (audio.currentTime / Math.max(audio.duration,1)) * 100;
+    progressBar.style.width = pct + '%';
+    timeLabel.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+  });
+  audio.addEventListener('loadedmetadata', ()=> timeLabel.textContent = `${fmt(0)} / ${fmt(audio.duration)}`);
+  audio.addEventListener('ended', ()=> { svgPlay.style.display='block'; svgPause.style.display='none'; playBtn.setAttribute('aria-pressed','false'); orb.setAttribute('aria-pressed','false'); });
+
+  // seek
+  document.querySelector('.progress-wrap').addEventListener('click',(e)=>{
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left; const pct = x / rect.width;
+    audio.currentTime = pct * (audio.duration || 0);
+  });
+
+  // volume
+  vol.addEventListener('input', ()=> { audio.volume = parseFloat(vol.value); muteBtn.textContent = audio.volume > 0 ? '🔊' : '🔈'; });
+  vol.value = 0.7; audio.volume = 0.7;
+
+  // mute
+  muteBtn.addEventListener('click', ()=>{
+    audio.muted = !audio.muted;
+    muteBtn.textContent = audio.muted ? '🔈' : '🔊';
+  });
+
+  // loop
+  loopBtn.addEventListener('click', ()=>{
+    audio.loop = !audio.loop;
+    loopBtn.setAttribute('aria-pressed', audio.loop);
+    loopBtn.style.color = audio.loop ? 'var(--accent)' : '';
+  });
+
+  // ensure audio context unlock attempt on first user gesture
+  document.addEventListener('pointerdown', function initOnce(){
+    try { setupAudioNodes(); audio.play().then(()=>{ audio.pause(); }).catch(()=>{}); }catch(e){}
+    document.removeEventListener('pointerdown', initOnce);
+  }, {once:true});
+})();
+
+/* -------------------------
+   Small helpers: nav highlight hint
+   ------------------------- */
 document.querySelectorAll('nav a').forEach(a=>{
-  a.addEventListener('click', ()=> {
-    // small visual hint
+  a.addEventListener('click', ()=>{
     a.style.outline = '2px solid rgba(0,240,255,0.07)';
     setTimeout(()=> a.style.outline = '', 700);
   });
 });
 </script>
 </body>
-        </html>
+</html>
