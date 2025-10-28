@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LORD VOYAGE — Space Nebula Realm</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Orbitron',sans-serif;
+  color:#e8faff;
+  overflow-x:hidden;
+  background:#000;
+}
+
+/* --- Nebula Animated Background --- */
+body::before{
+  content:'';
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(ellipse at 20% 30%, #3b0066 0%, transparent 40%),
+             radial-gradient(ellipse at 80% 70%, #005577 0%, transparent 40%),
+             radial-gradient(ellipse at 50% 50%, #240046 0%, transparent 50%);
+  background-blend-mode:screen;
+  animation:nebulaMove 30s ease-in-out infinite alternate;
+  z-index:-3;
+  filter:blur(80px);
+}
+@keyframes nebulaMove{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(-5%,5%) scale(1.2)}
+}
+
+/* --- Constellation Canvas --- */
+canvas#stars{
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  z-index:-2;
+}
+
+/* --- Layout --- */
+header{text-align:center;padding:3rem 1rem 1.5rem;}
+header h1{font-size:2rem;color:#8af7ff;text-shadow:0 0 15px #00ffff;}
+header p{opacity:0.8;font-size:0.95rem;}
+
+section{
+  width:90%;
+  max-width:600px;
+  margin:2rem auto;
+  background:rgba(0,0,20,0.6);
+  border-radius:25px;
+  backdrop-filter:blur(12px);
+  padding:2rem 1.5rem;
+  box-shadow:0 0 25px rgba(0,255,255,0.1);
+}
+
+/* --- Bio Section --- */
+.bio{text-align:center;}
+.bio img{
+  display:block;
+  margin:0 auto 20px auto;
+  border-radius:50%;
+  width:150px;
+  height:150px;
+  object-fit:cover;
+  box-shadow:0 0 20px rgba(0,255,255,0.4);
+  transition:transform .5s ease,box-shadow .5s ease;
+  cursor:pointer;
+}
+.bio img:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 40px rgba(0,255,255,0.8);
+}
+.bio p{line-height:1.6;}
+
+/* --- Skills Section --- */
+.skills h3{
+  text-align:center;
+  color:#79f2ff;
+  margin:0.6rem 0;
+  transition:transform 0.3s, text-shadow 0.3s;
+}
+.skills h3:hover{
+  transform:scale(1.05);
+  text-shadow:0 0 10px #00ffff;
+}
+
+/* --- Channels --- */
+.channels a{
+  display:block;
+  text-align:center;
+  margin:0.5rem 0;
+  color:#99eeff;
+  text-decoration:none;
+  font-size:1rem;
+  transition:color .3s;
+}
+.channels a:hover{color:#fff;text-shadow:0 0 10px #00ffff;}
+
+/* --- Contact --- */
+.contact p{text-align:center;opacity:0.9;}
+
+/* --- Music Orb --- */
+.audio-orb{
+  position:fixed;
+  bottom:40px;right:40px;
+  width:70px;height:70px;
+  border-radius:50%;
+  background:radial-gradient(circle,#00ffff,#004466);
+  box-shadow:0 0 30px rgba(0,255,255,0.7);
+  display:flex;justify-content:center;align-items:center;
+  font-size:1.5rem;
+  animation:orbGlow 3s infinite alternate ease-in-out;
+  cursor:pointer;
+  z-index:5;
+}
+@keyframes orbGlow{
+  from{box-shadow:0 0 20px rgba(0,255,255,0.4);}
+  to{box-shadow:0 0 40px rgba(0,255,255,0.9);}
+}
+</style>
+</head>
+
+<body>
+<canvas id="stars"></canvas>
+
+<header>
+  <h1>LORD VOYAGE</h1>
+  <p>Space Nebula Realm</p>
+</header>
+
+<section class="bio">
+  <h2>Voyager Bio</h2>
+  <img src="Voyager.jpg" id="profile-pic" alt="Voyager">
+  <p><strong>Place:</strong> Uganda<br>
+  <strong>Age:</strong> 19<br>
+  <strong>Best Friend:</strong> Kevin Tech<br><br>
+  <em>Tap my image to awaken the stars and play my theme.</em></p>
+</section>
+
+<section class="skills">
+  <h2>Skills & Expertise</h2>
+  <h3>⚡ Ethical Hacking</h3>
+  <h3>🌌 Web Development</h3>
+  <h3>📱 Termux Expert</h3>
+</section>
+
+<section class="channels">
+  <h2>Channels & Links</h2>
+  <a href="https://t.me/LordVoyagee/" target="_blank">Telegram: @LordVoyagee</a>
+  <a href="https://t.me/terminalsupport" target="_blank">Support Channel</a>
+  <a href="https://whatsapp.com/channel/0029Vb6ZjMMGE56kBkEww63a" target="_blank">WhatsApp Channel</a>
+</section>
+
+<section class="contact">
+  <h2>Contact</h2>
+  <p>For collaborations or projects,<br>reach out via Telegram or WhatsApp above.</p>
+</section>
+
+<div class="audio-orb" id="music-control" title="Music Control">🎵</div>
+<audio id="bg-music" src="voyager.mp3" loop></audio>
+
+<script>
+// ----- CONSTELLATION -----
+const canvas=document.getElementById('stars'),ctx=canvas.getContext('2d');
+let stars=[],w,h;function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight;}
+window.addEventListener('resize',resize);resize();
+for(let i=0;i<140;i++){stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.2,d:Math.random()*0.5});}
+function drawStars(){ctx.clearRect(0,0,w,h);ctx.fillStyle='#00eaff';for(let s of stars){ctx.beginPath();ctx.arc(s.x,s.y,s.r*1.1,0,Math.PI*2);ctx.fill();}}
+function animateStars(){for(let s of stars){s.y+=s.d;if(s.y>h)s.y=0;}drawStars();requestAnimationFrame(animateStars);}animateStars();
+
+// ----- MUSIC + IMAGE INTERACTION -----
+const music=document.getElementById('bg-music');
+const profile=document.getElementById('profile-pic');
+const orb=document.getElementById('music-control');
+let playing=false;let ctxAudio,analyser,dataArray;
+
+function initAudio(){if(!ctxAudio){ctxAudio=new (window.AudioContext||window.webkitAudioContext)();const src=ctxAudio.createMediaElementSource(music);
+analyser=ctxAudio.createAnalyser();analyser.fftSize=256;dataArray=new Uint8Array(analyser.frequencyBinCount);
+src.connect(analyser);analyser.connect(ctxAudio.destination);}}
+
+function pulseEffect(){
+if(analyser){
+analyser.getByteFrequencyData(dataArray);
+let avg=dataArray.reduce((a,b)=>a+b)/dataArray.length;
+ctx.globalAlpha=0.05;
+ctx.fillStyle=`rgba(0,10,30,${avg/10000})`;
+ctx.fillRect(0,0,w,h);
+}
+requestAnimationFrame(pulseEffect);
+}
+
+function togglePlay(){
+if(!playing){
+initAudio();music.play();profile.style.boxShadow='0 0 45px rgba(0,255,255,0.9)';
+playing=true;pulseEffect();
+}else{
+music.pause();profile.style.boxShadow='0 0 20px rgba(0,255,255,0.4)';
+playing=false;
+}
+}
+profile.addEventListener('click',togglePlay);
+orb.addEventListener('click',togglePlay);
+</script>
+</body>
+</html>
