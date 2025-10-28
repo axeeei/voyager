@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LORD VOYAGE — Bio (Constellation Touch)</title>
+  <style>
+    :root{
+      --accent: #00f0ff;
+      --card-max: 920px;
+      --radius: 12px;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, Roboto, "Segoe UI", Arial;
+      background:
+        radial-gradient(circle at 25% 10%, rgba(0,160,255,0.03) 0%, transparent 20%),
+        linear-gradient(180deg,#050505,#000);
+      color: #e9fbff;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:40px 18px 120px;
+      overflow: hidden;
+    }
+
+    /* particles and constellation canvases fill the screen */
+    canvas#bgParticles, canvas#constellation {
+      position:fixed;
+      left:0;top:0;
+      width:100%;height:100%;
+      z-index:0;
+      pointer-events:none;
+      mix-blend-mode:screen;
+    }
+
+    main.wrap{z-index:2; width:100%; max-width:var(--card-max); display:flex; flex-direction:column; gap:22px; align-items:center;}
+
+    .card{
+      width:100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(0,240,255,0.04);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+      border-radius:var(--radius);
+      padding:20px;
+      overflow:hidden;
+    }
+
+    h1{margin:6px 0 10px 0;font-size:clamp(20px,3.6vw,34px);letter-spacing:2px;text-transform:uppercase;text-align:center;text-shadow:0 0 18px rgba(0,240,255,0.12);}
+
+    .profile{display:flex;gap:18px;align-items:center;padding:8px 2px;flex-wrap:wrap;}
+    .avatar{width:120px;height:120px;border-radius:50%;background-image:url('https://i.ibb.co/NrX7yJc/silhouette.png');background-size:cover;background-position:center;box-shadow:0 0 30px rgba(0,240,255,0.08);flex-shrink:0;}
+    .meta p{margin:6px 0;font-weight:600;color: rgba(220,255,255,0.95);}
+
+    .section-title{margin-top:10px;color: rgba(220,255,255,0.9);letter-spacing:1px;font-weight:700;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px;}
+    .btn{background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));border:1px solid rgba(0,0,0,0.45);padding:12px 14px;border-radius:10px;text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:1px;cursor:default;box-shadow: 0 6px 20px rgba(0,0,0,0.5);transition: transform .22s ease, box-shadow .22s ease, color .22s ease;}
+    .btn:hover{transform: translateY(-4px);color: var(--accent);box-shadow: 0 12px 30px rgba(0,240,255,0.06);}
+    a.btn{text-decoration:none;color:inherit;display:inline-block;cursor:pointer;}
+
+    /* music UI */
+    .music{position:fixed;right:18px;bottom:18px;width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#0b0b0b,#070707);border:1px solid rgba(0,240,255,0.06);box-shadow: 0 8px 28px rgba(0,0,0,0.6), 0 0 22px rgba(0,240,255,0.06);z-index:3;cursor:pointer;}
+    .music svg{width:30px;height:30px;fill:var(--accent);pointer-events:none}
+    .progress-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;width:70%;max-width:720px;height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.02);backdrop-filter: blur(4px);z-index:3;}
+    .progress{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#6ef);transition:width .12s linear;}
+    .prog-time{position:fixed;bottom:36px;left:18px;font-size:12px;color:rgba(220,255,255,0.7);z-index:3;}
+
+    @media(max-width:520px){.avatar{width:92px;height:92px}.music{right:14px;bottom:14px;width:58px;height:58px}.progress-wrap{width:92%}}
+  </style>
+</head>
+<body>
+  <!-- background canvases -->
+  <canvas id="bgParticles" aria-hidden="true"></canvas>
+  <canvas id="constellation" aria-hidden="false"></canvas>
+
+  <main class="wrap" id="wrap" role="main" aria-live="polite">
+    <section class="card" id="card">
+      <h1>LORD VOYAGE BIO</h1>
+      <div class="profile">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="meta">
+          <p><strong>PLACE:</strong> Uganda</p>
+          <p><strong>AGE:</strong> 19</p>
+          <p><strong>BEST FRIEND:</strong> Kevin Tech</p>
+        </div>
+      </div>
+
+      <div><div class="section-title">Skills &amp; Expert</div>
+        <div class="grid" id="skills"></div>
+      </div>
+
+      <div style="margin-top:18px">
+        <div class="section-title">Admins on Channels</div>
+        <div class="grid" id="channels"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- audio + UI -->
+  <audio id="bg" preload="auto" loop>
+    <source src="voyager.mp3" type="audio/mpeg" />
+  </audio>
+  <div class="progress-wrap" aria-hidden="true"><div class="progress" id="progress"></div></div>
+  <div class="prog-time" id="progt">00:00 / 00:00</div>
+  <button class="music" id="musicBtn" aria-pressed="false" aria-label="Play music">
+    <svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    <svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5h-4z"/></svg>
+  </button>
+
+  <script>
+  /************************************************************************
+   * Simple UI population (skills & channels)
+   ************************************************************************/
+  const skills = ["Ethical Hacking","Web Making","Termux Expert","Termux Tools Making","Programming Expert","Web Info Scraping","Panel Seller","Etc"];
+  const skillContainer = document.getElementById('skills');
+  skills.forEach(s => { const d = document.createElement('div'); d.className='btn'; d.textContent=s; skillContainer.appendChild(d); });
+
+  const channels = [
+    {title: "The Mastermind", url: "https://t.me/LordVoyagee/"},
+    {title: "Telegram Channel", url: "https://t.me/terminalsupport"},
+    {title: "WhatsApp Channel", url: "https://whatsapp.com/channel/0029Vb6ZjMMGE56kBkEww63a"}
+  ];
+  const chContainer = document.getElementById('channels');
+  channels.forEach(c => {
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.textContent = c.title;
+    a.href = c.url;
+    a.target = '_blank'; a.rel='noopener noreferrer';
+    chContainer.appendChild(a);
+  });
+
+
+  /************************************************************************
+   * Background particles (lightweight floating dots)
+   ************************************************************************/
+  (function particles(){
+    const canvas = document.getElementById('bgParticles');
+    const ctx = canvas.getContext('2d');
+    let W = innerWidth, H = innerHeight;
+    canvas.width = W; canvas.height = H;
+    const items = [];
+    for(let i=0;i<36;i++){
+      items.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: Math.random()*1.6 + 0.6,
+        vx: (Math.random()-0.5)*0.2,
+        vy: (Math.random()-0.5)*0.2,
+        alpha: 0.03 + Math.random()*0.06
+      });
+    }
+    function frame(){
+      ctx.clearRect(0,0,W,H);
+      items.forEach(p=>{
+        p.x += p.vx; p.y += p.vy;
+        if(p.x<0) p.x = W; if(p.x>W) p.x=0; if(p.y<0) p.y=H; if(p.y>H) p.y=0;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(0,240,255,${p.alpha})`;
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+      });
+      requestAnimationFrame(frame);
+    }
+    frame();
+    addEventListener('resize', ()=>{ W=innerWidth; H=innerHeight; canvas.width=W; canvas.height=H; });
+  })();
+
+
+  /************************************************************************
+   * Constellation effect: stars created on touch/click, linked when close.
+   * - supports touchstart & click
+   * - stars twinkle and fade out gradually
+   * - small chime played via WebAudio on star creation
+   ************************************************************************/
+  (function constellation(){
+    const canvas = document.getElementById('constellation');
+    const ctx = canvas.getContext('2d');
+    let W = innerWidth, H = innerHeight;
+    canvas.width = W; canvas.height = H;
+    canvas.style.zIndex = 1; // above particles but below content
+    canvas.style.pointerEvents = 'auto'; // allow touch/click events
+    // keep stars reasonable for performance
+    const MAX_STARS = 55;
+    const LINK_DIST = 140; // px threshold to draw a line
+    const stars = [];
+
+    // WebAudio chime (short, polite)
+    let audioCtx = null;
+    function playChime(x){
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        // frequency proportional to x position for a slight stereo feeling
+        const freq = 440 + (x / Math.max(W,1)) * 600;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.08, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.8);
+      }catch(e){
+        // audio context blocked or unavailable — fail silently
+      }
+    }
+
+    function addStar(x, y){
+      // clamp inside viewport
+      x = Math.max(6, Math.min(W-6, x));
+      y = Math.max(6, Math.min(H-6, y));
+      // limit count
+      if(stars.length > MAX_STARS) stars.shift();
+      const s = {
+        x, y,
+        r: Math.random()*1.8 + 1.2,
+        life: 1.0,             // 1.0 -> 0.0 (fades out)
+        decay: 0.005 + Math.random()*0.007,
+        twinkleDir: Math.random() > 0.5 ? 1 : -1,
+        twinkleRate: 0.01 + Math.random()*0.02,
+        hue: 180 + Math.random()*60
+      };
+      stars.push(s);
+      // chime uses x for variety
+      playChime(x);
+    }
+
+    // handle touch & click (support passive:false for touchmove prevention if needed)
+    function onPointer(e){
+      // unify touch & mouse
+      let x,y;
+      if(e.type.startsWith('touch')){
+        const t = e.changedTouches[0];
+        x = t.clientX; y = t.clientY;
+      } else {
+        x = e.clientX; y = e.clientY;
+      }
+      addStar(x,y);
+      // visual feedback: small burst (optional)
+      e.preventDefault && e.preventDefault();
+    }
+    // listen for both
+    canvas.addEventListener('click', onPointer, {passive:false});
+    canvas.addEventListener('touchstart', onPointer, {passive:false});
+
+    // draw loop
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      // draw lines between nearby stars
+      for(let i=0;i<stars.length;i++){
+        const a = stars[i];
+        for(let j=i+1;j<stars.length;j++){
+          const b = stars[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if(d < LINK_DIST){
+            const alpha = (1 - d / LINK_DIST) * 0.28 * Math.min(a.life, b.life);
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(0,240,255,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      // draw stars with glow
+      for(let i=stars.length-1;i>=0;i--){
+        const s = stars[i];
+        // twinkle
+        s.r += Math.sin(Date.now()*s.twinkleRate*0.01) * s.twinkleDir * 0.02;
+        // life decay
+        s.life -= s.decay;
+        const alpha = Math.max(0, s.life);
+
+        // glow layers
+        const g1 = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*8);
+        g1.addColorStop(0, `rgba(0,240,255,${0.14*alpha})`);
+        g1.addColorStop(0.5, `rgba(0,240,255,${0.04*alpha})`);
+        g1.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.beginPath();
+        ctx.fillStyle = g1;
+        ctx.arc(s.x, s.y, s.r*8, 0, Math.PI*2);
+        ctx.fill();
+
+        // core
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${0.9*alpha})`;
+        ctx.arc(s.x, s.y, Math.max(0.8, s.r*0.45), 0, Math.PI*2);
+        ctx.fill();
+
+        // small inner tint
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(0,200,255,${0.5*alpha})`;
+        ctx.arc(s.x + 0.2, s.y - 0.2, s.r*0.9, 0, Math.PI*2);
+        ctx.fill();
+
+        // remove if dead
+        if(s.life <= 0.01){
+          stars.splice(i,1);
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    // handle resizing
+    window.addEventListener('resize', ()=>{
+      W = innerWidth; H = innerHeight;
+      canvas.width = W; canvas.height = H;
+    });
+  })();
+
+
+  /************************************************************************
+   * Music controls (same as before) and progress UI
+   ************************************************************************/
+  const audio = document.getElementById('bg');
+  const btn = document.getElementById('musicBtn');
+  const playIcon = document.getElementById('playIcon');
+  const pauseIcon = document.getElementById('pauseIcon');
+  const progress = document.getElementById('progress');
+  const progt = document.getElementById('progt');
+
+  function fmt(t){ if(!isFinite(t)) return '00:00'; const m=Math.floor(t/60).toString().padStart(2,'0'); const s=Math.floor(t%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+  function updateProgress(){ const pct = (audio.currentTime / Math.max(audio.duration,1)) * 100; progress.style.width = pct + '%'; progt.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`; }
+
+  btn.addEventListener('click', async ()=>{
+    try{
+      if(audio.paused){ await audio.play(); playIcon.style.display='none'; pauseIcon.style.display='block'; btn.setAttribute('aria-pressed','true'); }
+      else { audio.pause(); playIcon.style.display='block'; pauseIcon.style.display='none'; btn.setAttribute('aria-pressed','false'); }
+    }catch(e){ console.warn('Playback failed:', e); }
+  });
+
+  audio.addEventListener('timeupdate', updateProgress);
+  audio.addEventListener('loadedmetadata', updateProgress);
+  audio.addEventListener('ended', ()=>{ playIcon.style.display='block'; pauseIcon.style.display='none'; btn.setAttribute('aria-pressed','false'); });
+
+  document.querySelector('.progress-wrap').addEventListener('click', (ev)=>{
+    const rect = ev.currentTarget.getBoundingClientRect();
+    const x = ev.clientX - rect.left; const pct = x / rect.width; audio.currentTime = pct * (audio.duration || 0); updateProgress();
+  });
+
+  // friendly hint: many mobile browsers require a user gesture to start audio — tapping the play button provides that.
+
+  </script>
+</body>
+</html>
